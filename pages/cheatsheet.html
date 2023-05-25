@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en-US">
+
+<h1>Configs</h1>
+
+<h3>poetry</h3>
+<p><a href="https://python-poetry.org/docs/">official docs</a></p>
+<pre><code>
+poetry env use python3.11
+poetry init
+poetry add --group
+poetry update
+poetry remove
+poetry install --only
+</code></pre>
+
+<h3>.flake8, integration with black</h3>
+<p><a href="https://flake8.pycqa.org/en/latest/user/configuration.html">official docs</a></p>
+<pre><code>
+[flake8]
+max-line-length=120
+ignore=E203,W503,E402,B008
+per-file-ignores=__init__.py:F401
+exclude=venv,static
+</code></pre>
+
+<h3>streamlit config.toml</h3>
+<p><a href="https://docs.streamlit.io/library/advanced-features/configuration">official docs</a></p>
+
+<pre><code>[browser]
+    gatherUsageStats = false
+
+[theme]
+    font=&quot;arial&quot;
+
+
+[logger]
+    level = &quot;error&quot;
+
+[server]
+    address = &quot;0.0.0.0&quot;</code></pre>
+
+
+<h3>pre-commit</h3>
+<p><a href="https://pre-commit.com/">official docs</a></p>
+
+<pre><code>repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+        args: [ --unsafe ]
+      - id: end-of-file-fixer
+        files: &#39;\.pyi?$&#39;
+      - id: trailing-whitespace
+        files: &#39;\.pyi?$&#39;
+      - id: check-ast
+        files: &#39;\.pyi?$&#39;
+      - id: check-builtin-literals
+        files: &#39;\.pyi?$&#39;
+      - id: detect-private-key
+        files: &#39;\.pyi?$&#39;
+      - id: check-case-conflict
+        files: &#39;\.pyi?$&#39;
+      - id: pretty-format-json
+        files: &#39;\.pyi?$&#39;
+  - repo: https://github.com/psf/black
+    rev: 22.12.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: [&quot;--line-length=120&quot;]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--config, ./.flake8]
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.39.1
+    hooks:
+      - id: commitizen
+      - id: commitizen-branch
+        stages: [ push, post-commit ]</code></pre>
+
+<h3>bash profile</h3>
+
+<h4>add git and other aliases </h4>
+<pre><code>
+eval &quot;$(/opt/homebrew/bin/brew shellenv)&quot;
+export PYENV_ROOT=&quot;$HOME/.pyenv&quot;
+export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;
+export PATH=&quot;$HOME/.local/bin:$PATH&quot;
+if command -v pyenv 1&gt;/dev/null 2&gt;&1; then
+  eval &quot;$(pyenv init -)&quot;
+fi
+alias aws_exp_env=&#39;eval &quot;$(aws2-wrap --profile XXX --export)&quot;&#39;
+alias aws_sso_dev=&quot;aws sso login --profile XXX&quot;
+
+function parse_git_branch() {
+    git branch 2&gt; /dev/null | sed -n -e &#39;s/^\* \(.*\)/[\1]/p&#39;
+}
+
+COLOR_DEF=$&#39;\e[0m&#39;
+COLOR_USR=$&#39;\e[38;5;243m&#39;
+COLOR_DIR=$&#39;\e[38;5;197m&#39;
+COLOR_GIT=$&#39;\e[38;5;39m&#39;
+setopt PROMPT_SUBST
+export PROMPT=&#39;${COLOR_USR}%n ${COLOR_DIR}%~ ${COLOR_GIT}$(parse_git_branch)${COLOR_DEF} $ &#39;
+
+autoload -Uz compinit
+compinit
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/local/bin/terraform terraform</code></pre>
+
+
+<h1>Docker</h1>
+
+<h3>docker-compose</h3>
+
+<h4>execute multiple commands at start</h4>
+
+<pre><code>
+version: &#39;3.2&#39;
+services:
+  service_name:
+    container_name: container_name
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONPATH=/app
+    ports:
+      - &quot;external:internal&quot;
+    command:
+      - bash
+      - -c
+      - |
+        command1
+        command2
+</code></pre>
+
+<h4>keep the container running continuously</h4>
+
+<pre><code>
+version: &#39;3.2&#39;
+services:
+  service_name:
+    container_name: container_name
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONPATH=/app
+    ports:
+      - &quot;external:internal&quot;
+    command:
+      - bash
+      - -c
+      - tail -f /dev/null</code></pre>
+
+<h3>docker</h3>
+<h4>execute bash from</h4>
+<p><em>image</em></p>
+<code>docker run -it image bash</code>
+<p><em>container</em></p>
+<code>docker exec -it container bash</code>
+
+
+<h1>SQLAlchemy</h1>
+
+<h3>AuditBaseModelMixin</h3>
+<h4>Base model mixin for applications which implement auditing (postgres)</h4>
+
+<pre><code>
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import expression
+
+
+class AuditBaseModelMixin:
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        index=True,
+        server_default=text(
+            &quot;gen_random_uuid()&quot;,
+        ),
+    )
+    created_timestamp = Column(DateTime(timezone=True), server_default=text(&quot;current_timestamp&quot;))
+    updated_timestamp = Column(DateTime(timezone=True), server_default=text(&quot;current_timestamp&quot;))
+    is_active = Column(Boolean, server_default=expression.true(), nullable=False)</code></pre>
+
+<h1>Testing</h1>
+
+<h3>patch order in unittest</h3>
+<p><a href="https://docs.python.org/3/library/unittest.mock.html">official docs</a></p>
+<pre><code>
+from unittest.mock import patch
+
+
+@patch(&#39;where.foo.is.used&#39;)
+@patch(&#39;where.bar.is.used&#39;)
+def test_foo_bar(mock_bar, mock_foo):
+    # call the method to test
+    assert mock_bar.called
+    assert mock_foo.called</code></pre>
+
+
+<h3>pytest parametrize</h3>
+<p><a href="https://docs.pytest.org/en/6.2.x/parametrize.html">official docs</a></p>
+<pre><code>
+import pytest
+
+
+@pytest.mark.parametrize(
+    &quot;param1&quot;, &quot;param2&quot;, &quot;expected_result&quot;
+    [
+        (&quot;param1_value1&quot;, &quot;param2_value1&quot;, 1), 
+        (&quot;param1_value2&quot;, &quot;param2_value2&quot;, 2), 
+    ]
+)
+def test_params(param1, param2, expected_result):
+    return_value = what_am_i_testing(param1, param2)
+    assert return_value == expected_result</code></pre>
+
+
+<h1>Postgres</h1>
+
+<h3>calendar table</h3>
+
+<pre><code>create table calendar as
+SELECT CAST(&#39;2020-12-15&#39; AS DATE) + (n || &#39; day&#39;)::INTERVAL AS calendar_date 
+FROM generate_series(0, 900) n;</code></pre>
+
+</html>
