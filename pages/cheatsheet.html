@@ -1,6 +1,23 @@
 <!doctype html>
 <html lang="en-US">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="../styles/navbar.css">
+<link rel="stylesheet" href="../styles/body.css">
 
+<div class="navbar">
+
+    <a href="/pages/about.html">about</a>
+    <a href="/pages/portfolio.html">portfolio</a>
+    <a href="/pages/cheatsheet.html">acirtep's cheatsheet</a>
+    <a href="https://medium.com/@petrica.leuca/membership">sponsor me on Medium</a>
+    <a href="https://www.linkedin.com/in/pleuca/" class="fa fa-linkedin"></a>
+    <a href="https://medium.com/@petrica.leuca" class="fa fa-medium"></a>
+    <a href="https://github.com/acirtep" class="fa fa-github" style="color: white"></a>
+
+</div>
+
+<body class="body">
+<div style="font-family: 'Courier New', 'Courier New', cursive; padding-left: 50px;">
 <h1>Configs</h1>
 
 <h3>poetry</h3>
@@ -237,5 +254,6 @@ def test_params(param1, param2, expected_result):
 <pre><code>create table calendar as
 SELECT CAST(&#39;2020-12-15&#39; AS DATE) + (n || &#39; day&#39;)::INTERVAL AS calendar_date 
 FROM generate_series(0, 900) n;</code></pre>
-
+</div>
+</body>
 </html>
